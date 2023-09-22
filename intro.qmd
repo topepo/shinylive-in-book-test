@@ -92,6 +92,8 @@ grid_pred <-
   dplyr::select(deg_free, .extracts) %>% 
   unnest(.extracts) %>% 
   dplyr::select(-.pred_class, -.pred_two)
+
+save(grid_pred, file = "grid_pred.RData")
 ```
 
 ## shiny(live)!
