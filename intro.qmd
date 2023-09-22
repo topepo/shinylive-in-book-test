@@ -91,7 +91,7 @@ grid_pred <-
   collect_extracts(grid_pred) %>% 
   dplyr::select(deg_free, .extracts) %>% 
   unnest(.extracts) %>% 
-  dplyr::select(-.pred_class, .pred_two)
+  dplyr::select(-.pred_class, -.pred_two)
 ```
 
 ## shiny(live)!
@@ -134,7 +134,13 @@ server <- function(input, output) {
           col = "black"
         ) +
         lims(x = rngs$A, y = rngs$B)
+      
+      
+      # test base R graphics
+      # hist(preds$.pred_one)
+      
       print(p)
+      
     })
 }
 
