@@ -28,16 +28,13 @@ We'll use tidymodels. First, let's load packages then simulate some data:
 #| warning: false
 
 library(tidymodels)
-library(rules)
 library(shiny)
-library(doMC)
 
 # ------------------------------------------------------------------------------
 
 tidymodels_prefer()
 theme_set(theme_bw())
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf)
-registerDoMC(cores = parallel::detectCores())
 
 # ------------------------------------------------------------------------------
 
@@ -64,7 +61,9 @@ Let's try a logistic regression with spline terms for both predictors (equal deg
 #| warning: false
 
 model_spec <- logistic_reg()
-model_rec <- recipe(class ~ ., data = sim_tr) %>% step_spline_b(A, B, deg_free = tune())
+model_rec <- 
+  recipe(class ~ ., data = sim_tr) %>% 
+  step_spline_b(A, B, deg_free = tune())
 model_wflow <- workflow(model_rec, model_spec)
 ```
 
@@ -125,7 +124,8 @@ server <- function(input, output) {
     renderPlot({
       preds <- dplyr::filter(grid_pred, deg_free == input$deg_free)
       
-      preds %>% 
+      p <- 
+        preds %>% 
         ggplot(aes(A, B)) + 
         geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +
         geom_contour(
@@ -134,7 +134,8 @@ server <- function(input, output) {
           col = "black"
         ) +
         lims(x = rngs$A, y = rngs$B)
-  })
+      print(p)
+    })
 }
 
 app <- shinyApp(ui = ui, server = server)

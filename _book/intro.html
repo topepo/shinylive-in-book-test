@@ -179,6 +179,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#code-to-pre-compute-grids" id="toc-code-to-pre-compute-grids" class="nav-link active" data-scroll-target="#code-to-pre-compute-grids"><span class="header-section-number">1.1</span> Code to pre-compute grids</a></li>
+  <li><a href="#shinylive" id="toc-shinylive" class="nav-link" data-scroll-target="#shinylive"><span class="header-section-number">1.2</span> shiny(live)!</a></li>
   </ul>
 </nav>
     </div>
@@ -205,81 +206,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>For our book, I want to show the effects of hyperparameters on classification boundaries. In the past, we have done ggplot with faceting. That takes up a lot of space and is limited to 2-3 parameters.</p>
 <p>I’d like to embed a shiny app in a book and let users play around and assess the impacts.</p>
-<p>First I installed the <code>shinylive</code> extension:</p>
-<pre><code>$ quarto add quarto-ext/shinylive
-
-Quarto extensions may execute code when documents are rendered. If you do not 
-trust the authors of the extension, we recommend that you do not install or 
-use the extension.
- ? Do you trust the authors of this extension (Y/n) › Yes
-[✓] Downloading
-[✓] Unzipping
-    Found 1 extension.
-
-The following changes will be made:
-Embedded Shinylive applications   [Install]   0.0.4 (filter)
- ? Would you like to continue (Y/n) › Yes
-
-[✓] Extension installation complete.
-Learn more about this extension at https://www.github.com/quarto-ext/shinylive</code></pre>
+<p>First, I installed the <code>shinylive</code> extension:</p>
+<pre><code>shell&gt; quarto add quarto-ext/shinylive</code></pre>
 <p>and also the corresponding R package:</p>
-<pre><code>&gt; pak::pak("posit-dev/r-shinylive")
-✔ Updated metadata database: 5.25 MB in 9 files.                          
-✔ Updating metadata database ... done                                     
-                                                                           
-→ Will install 2 packages.
-→ Will download 1 CRAN package (1.53 MB), cached: 1 (0 B).
-+ archive     1.1.5  ⬇ (1.53 MB)
-+ shinylive   0.1.0 👷‍♂️🔧 (GitHub: 77c775a)
-ℹ Getting 1 pkg (1.53 MB), 1 cached
-✔ Got archive 1.1.5 (aarch64-apple-darwin20) (1.53 MB)                                
-✔ Got shinylive 0.1.0 (source) (31.53 kB)                                             
-✔ Downloaded 2 packages (1.56 MB)in 890ms                                             
-✔ Installed archive 1.1.5  (29ms)                                    
-ℹ Packaging shinylive 0.1.0                                          
-✔ Packaged shinylive 0.1.0 (6s)                                      
-ℹ Building shinylive 0.1.0                                           
-✔ Built shinylive 0.1.0 (688ms)                                      
-✔ Installed shinylive 0.1.0 (github::posit-dev/r-shinylive@77c775a) (13ms)
-✔ 1 pkg + 21 deps: kept 20, added 2, dld 2 (NA B) [18.7s] </code></pre>
+<pre><code>R&gt; pak::pak("posit-dev/r-shinylive")</code></pre>
 <section id="code-to-pre-compute-grids" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="code-to-pre-compute-grids"><span class="header-section-number">1.1</span> Code to pre-compute grids</h2>
-<p>The idea is to make a regular grid of values and precompute predictions on a data grid. These values filtered in the shiny app and the decision boundary can be computed using a contour plot.</p>
-<p>We’ll use tidymodels. First, let’s load packages then simulatin some data:</p>
+<p>The idea is to make a regular grid of values and precompute predictions on a data grid. These values are filtered in the shiny app, and the decision boundary can be computed using a contour plot.</p>
+<p>We’ll use tidymodels. First, let’s load packages then simulate some data:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rules)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doMC)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------------------------------------</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------------------------------------</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidymodels_prefer</span>()</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_bw</span>())</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">pillar.advice =</span> <span class="cn">FALSE</span>, <span class="at">pillar.min_title_chars =</span> <span class="cn">Inf</span>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoMC</span>(<span class="at">cores =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>())</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------------------------------------</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">expr</span>(<span class="sc">-</span><span class="dv">1</span> <span class="sc">-</span> <span class="dv">4</span> <span class="sc">*</span> A <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> B <span class="sc">-</span> <span class="fl">0.2</span> <span class="sc">*</span> A<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> B<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">943</span>)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>sim_tr  <span class="ot">&lt;-</span> <span class="fu">sim_logistic</span>(<span class="dv">500</span>, f)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>sim_val <span class="ot">&lt;-</span> <span class="fu">sim_logistic</span>(<span class="dv">300</span>, f)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="do">## Make a data grid and get its ranges</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>size <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>x_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>, <span class="dv">4</span>, <span class="at">length.out =</span> size)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>pred_grid <span class="ot">&lt;-</span> <span class="fu">crossing</span>(<span class="at">A =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> size), <span class="at">B =</span> x_seq)</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>rngs <span class="ot">&lt;-</span> <span class="fu">map</span>(pred_grid, extendrange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tidymodels_prefer</span>()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_bw</span>())</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">pillar.advice =</span> <span class="cn">FALSE</span>, <span class="at">pillar.min_title_chars =</span> <span class="cn">Inf</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------------------------------------</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">expr</span>(<span class="sc">-</span><span class="dv">1</span> <span class="sc">-</span> <span class="dv">4</span> <span class="sc">*</span> A <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> B <span class="sc">-</span> <span class="fl">0.2</span> <span class="sc">*</span> A<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> B<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">943</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>sim_tr  <span class="ot">&lt;-</span> <span class="fu">sim_logistic</span>(<span class="dv">500</span>, f)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>sim_val <span class="ot">&lt;-</span> <span class="fu">sim_logistic</span>(<span class="dv">300</span>, f)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="do">## Make a data grid and get its ranges</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>size <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>x_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>, <span class="dv">4</span>, <span class="at">length.out =</span> size)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>pred_grid <span class="ot">&lt;-</span> <span class="fu">crossing</span>(<span class="at">A =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> size), <span class="at">B =</span> x_seq)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>rngs <span class="ot">&lt;-</span> <span class="fu">map</span>(pred_grid, extendrange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s try a logistic regression with spline terms for both predictors (equal degrees of freedom):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>model_spec <span class="ot">&lt;-</span> <span class="fu">logistic_reg</span>()</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>model_rec <span class="ot">&lt;-</span> <span class="fu">recipe</span>(class <span class="sc">~</span> ., <span class="at">data =</span> sim_tr) <span class="sc">%&gt;%</span> <span class="fu">step_spline_b</span>(A, B, <span class="at">deg_free =</span> <span class="fu">tune</span>())</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>model_wflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>(model_rec, model_spec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>model_rec <span class="ot">&lt;-</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(class <span class="sc">~</span> ., <span class="at">data =</span> sim_tr) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_spline_b</span>(A, B, <span class="at">deg_free =</span> <span class="fu">tune</span>())</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>model_wflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>(model_rec, model_spec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we will pre-compute the predictions for each model configuration:</p>
 <div class="cell">
@@ -303,6 +270,9 @@ Learn more about this extension at https://www.github.com/quarto-ext/shinylive</
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(.extracts) <span class="sc">%&gt;%</span> </span>
 <span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>.pred_class, .pred_two)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="shinylive" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="shinylive"><span class="header-section-number">1.2</span> shiny(live)!</h2>
 <p>At this point, we need code for the user-interface and the plot results. Each is is very simple:</p>
 <pre class="shinylive-r" data-engine="r"><code>#| label: fig-shiny-spline
 #| fig-height: 7
@@ -329,7 +299,8 @@ server &lt;- function(input, output) {
     renderPlot({
       preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)
       
-      preds %&gt;% 
+      p &lt;- 
+        preds %&gt;% 
         ggplot(aes(A, B)) + 
         geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +
         geom_contour(
@@ -338,7 +309,8 @@ server &lt;- function(input, output) {
           col = "black"
         ) +
         lims(x = rngs$A, y = rngs$B)
-  })
+      print(p)
+    })
 }
 
 app &lt;- shinyApp(ui = ui, server = server)</code></pre>
