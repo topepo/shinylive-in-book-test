@@ -289,7 +289,9 @@ ui &lt;- fluidPage(
            )
     ),
     
-    plotOutput("spline_contours")
+    column(1, 
+           plotOutput("spline_contours")
+    )
   )
 )
 
