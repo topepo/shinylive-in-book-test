@@ -1,0 +1,24 @@
+project:
+  type: book
+
+book:
+  title: "shinylive-in-book-test"
+  author: "Norah Jones"
+  date: "9/22/2023"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+filters:
+  - shinylive
+

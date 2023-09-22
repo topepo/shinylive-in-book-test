@@ -1,0 +1,42 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "shinylive-in-book-test",
+    "section": "",
+    "text": "Preface\nThis is a Quarto book.\nTo learn more about Quarto books visit https://quarto.org/docs/books.\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "intro.html",
+    "href": "intro.html",
+    "title": "1  Adding interactivity for teaching",
+    "section": "",
+    "text": "For our book, I want to show the effects of hyperparameters on classification boundaries. In the past, we have done ggplot with faceting. That takes up a lot of space and is limited to 2-3 parameters.\nI’d like to embed a shiny app in a book and let users play around and assess the impacts.\nFirst I installed the shinylive extension:\n$ quarto add quarto-ext/shinylive\n\nQuarto extensions may execute code when documents are rendered. If you do not \ntrust the authors of the extension, we recommend that you do not install or \nuse the extension.\n ? Do you trust the authors of this extension (Y/n) › Yes\n[✓] Downloading\n[✓] Unzipping\n    Found 1 extension.\n\nThe following changes will be made:\nEmbedded Shinylive applications   [Install]   0.0.4 (filter)\n ? Would you like to continue (Y/n) › Yes\n\n[✓] Extension installation complete.\nLearn more about this extension at https://www.github.com/quarto-ext/shinylive",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adding interactivity for teaching</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "2  Summary",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Summary</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html#code-to-pre-compute-grids",
+    "href": "intro.html#code-to-pre-compute-grids",
+    "title": "1  Adding interactivity for teaching",
+    "section": "1.1 Code to pre-compute grids",
+    "text": "1.1 Code to pre-compute grids\nThe idea is to make a regular grid of values and precompute predictions on a data grid. These values filtered in the shiny app and the decision boundary can be computed using a contour plot.\nWe’ll use tidymodels. First, let’s load packages then simulatin some data:\n\nlibrary(tidymodels)\nlibrary(rules)\nlibrary(shiny)\nlibrary(doMC)\n\n# ------------------------------------------------------------------------------\n\ntidymodels_prefer()\ntheme_set(theme_bw())\noptions(pillar.advice = FALSE, pillar.min_title_chars = Inf)\nregisterDoMC(cores = parallel::detectCores())\n\n# ------------------------------------------------------------------------------\n\nf &lt;- expr(-1 - 4 * A - 2 * B - 0.2 * A^2 + 1 * B^2)\n\nset.seed(943)\nsim_tr  &lt;- sim_logistic(500, f)\nsim_val &lt;- sim_logistic(300, f)\n\n## Make a data grid and get its ranges\n\nsize &lt;- 100\nx_seq &lt;- seq(-4, 4, length.out = size)\npred_grid &lt;- crossing(A = seq(-3, 3, length.out = size), B = x_seq)\n\nrngs &lt;- map(pred_grid, extendrange)\n\nLet’s try a logistic regression with spline terms for both predictors (equal degrees of freedom):\n\nmodel_spec &lt;- logistic_reg()\nmodel_rec &lt;- recipe(class ~ ., data = sim_tr) %&gt;% step_spline_b(A, B, deg_free = tune())\nmodel_wflow &lt;- workflow(model_rec, model_spec)\n\nNow we will pre-compute the predictions for each model configuration:\n\nparam_grid &lt;- tibble(deg_free = 3:8)\n\n# This will produce predictions on the grid and save them and the original data\nget_grid_pred &lt;- function(x) {\n  augment(x, new_data = pred_grid)\n}\n\nctrl &lt;- control_grid(extract = get_grid_pred)\n\ngrid_pred &lt;- \n  model_wflow %&gt;% \n  tune_grid(resamples = apparent(sim_tr), grid = param_grid, control = ctrl)\n\n# pull out and format the predictions\ngrid_pred &lt;- \n  collect_extracts(grid_pred) %&gt;% \n  dplyr::select(deg_free, .extracts) %&gt;% \n  unnest(.extracts) %&gt;% \n  dplyr::select(-.pred_class, .pred_two)\n\nAt this point, we need code for the user-interface and the plot results. Each is is very simple:\n#| label: fig-shiny-spline\n#| fig-height: 7\n#| standalone: true\n\nui &lt;- fluidPage(\n  \n  fluidRow(\n    column(1, \n           sliderInput(\n             \"deg_free\", \n             label = \"Spline degrees of freedom:\",\n             min = 3L, value = 3L, max = 8L, step = 1L\n           )\n    ),\n    \n    plotOutput(\"spline_contours\")\n  )\n)\n\nserver &lt;- function(input, output) {\n  \n  output$spline_contours &lt;- \n    renderPlot({\n      preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)\n      \n      preds %&gt;% \n        ggplot(aes(A, B)) + \n        geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +\n        geom_contour(\n          aes(z = .pred_one), \n          breaks = 1/ 2,\n          col = \"black\"\n        ) +\n        lims(x = rngs$A, y = rngs$B)\n  })\n}\n\napp &lt;- shinyApp(ui = ui, server = server)",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adding interactivity for teaching</span>"
+    ]
+  }
+]
