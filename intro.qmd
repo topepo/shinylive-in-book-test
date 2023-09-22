@@ -96,7 +96,7 @@ grid_pred <-
 
 ## shiny(live)!
 
-At this point, we need code for the user-interface and the plot results. Each is is very simple:
+Here are the results: 
 
 ```{shinylive-r}
 #| label: fig-shiny-spline
@@ -148,4 +148,6 @@ app <- shinyApp(ui = ui, server = server)
 ```
 
 
+The shiny code [is very simple](https://github.com/topepo/shinylive-in-book-test/blob/ec04f975cd42ae578199d222550141e4f0fca8d9/intro.qmd#L101:L148). 
 
+I'd like to be able to use these as Quarto figures (I used a figure-type chunk). 

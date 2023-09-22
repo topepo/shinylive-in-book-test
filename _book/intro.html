@@ -273,7 +273,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="shinylive" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="shinylive"><span class="header-section-number">1.2</span> shiny(live)!</h2>
-<p>At this point, we need code for the user-interface and the plot results. Each is is very simple:</p>
+<p>Here are the results:</p>
 <pre class="shinylive-r" data-engine="r"><code>#| label: fig-shiny-spline
 #| fig-height: 7
 #| standalone: true
@@ -320,6 +320,8 @@ server &lt;- function(input, output) {
 }
 
 app &lt;- shinyApp(ui = ui, server = server)</code></pre>
+<p>The shiny code <a href="https://github.com/topepo/shinylive-in-book-test/blob/ec04f975cd42ae578199d222550141e4f0fca8d9/intro.qmd#L101:L148">is very simple</a>.</p>
+<p>I’d like to be able to use these as Quarto figures (I used a figure-type chunk).</p>
 
 
 </section>
