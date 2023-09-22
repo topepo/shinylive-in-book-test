@@ -270,7 +270,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(.extracts) <span class="sc">%&gt;%</span> </span>
 <span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>.pred_class, <span class="sc">-</span>.pred_two)</span>
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(grid_pred, <span class="at">file =</span> <span class="st">"grid_pred.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">"grid_pred.RData"</span>)) {</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">save</span>(grid_pred, <span class="at">file =</span> <span class="st">"grid_pred.RData"</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="shinylive" class="level2" data-number="1.2">
@@ -301,6 +303,7 @@ server &lt;- function(input, output) {
   
   output$spline_contours &lt;- 
     renderPlot({
+      load(url("https://github.com/topepo/shinylive-in-book-test/raw/main/grid_pred.RData"))
       preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)
       
       p &lt;- 

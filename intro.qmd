@@ -93,7 +93,10 @@ grid_pred <-
   unnest(.extracts) %>% 
   dplyr::select(-.pred_class, -.pred_two)
 
-save(grid_pred, file = "grid_pred.RData")
+if (!exists("grid_pred.RData")) {
+  save(grid_pred, file = "grid_pred.RData")
+}
+
 ```
 
 ## shiny(live)!
@@ -126,6 +129,7 @@ server <- function(input, output) {
   
   output$spline_contours <- 
     renderPlot({
+      load(url("https://github.com/topepo/shinylive-in-book-test/raw/main/grid_pred.RData"))
       preds <- dplyr::filter(grid_pred, deg_free == input$deg_free)
       
       p <- 
