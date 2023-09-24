@@ -303,7 +303,13 @@ server &lt;- function(input, output) {
   
   output$spline_contours &lt;- 
     renderPlot({
-      load(url("https://github.com/topepo/shinylive-in-book-test/raw/main/grid_pred.RData"))
+      
+      grid_file &lt; tempfile()
+      download.file(
+        "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData",
+        destfile = grid_file)
+      load(grid_file)
+      
       preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)
       
       p &lt;- 

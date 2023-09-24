@@ -10,26 +10,6 @@
     ]
   },
   {
-    "objectID": "intro.html",
-    "href": "intro.html",
-    "title": "1  Adding interactivity for teaching",
-    "section": "",
-    "text": "For our book, I want to show the effects of hyperparameters on classification boundaries. In the past, we have done ggplot with faceting. That takes up a lot of space and is limited to 2-3 parameters.\nI’d like to embed a shiny app in a book and let users play around and assess the impacts.\nFirst I installed the shinylive extension:\n$ quarto add quarto-ext/shinylive\n\nQuarto extensions may execute code when documents are rendered. If you do not \ntrust the authors of the extension, we recommend that you do not install or \nuse the extension.\n ? Do you trust the authors of this extension (Y/n) › Yes\n[✓] Downloading\n[✓] Unzipping\n    Found 1 extension.\n\nThe following changes will be made:\nEmbedded Shinylive applications   [Install]   0.0.4 (filter)\n ? Would you like to continue (Y/n) › Yes\n\n[✓] Extension installation complete.\nLearn more about this extension at https://www.github.com/quarto-ext/shinylive",
-    "crumbs": [
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adding interactivity for teaching</span>"
-    ]
-  },
-  {
-    "objectID": "summary.html",
-    "href": "summary.html",
-    "title": "2  Summary",
-    "section": "",
-    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
-    "crumbs": [
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Summary</span>"
-    ]
-  },
-  {
     "objectID": "intro.html#code-to-pre-compute-grids",
     "href": "intro.html#code-to-pre-compute-grids",
     "title": "1  Adding interactivity for teaching",
@@ -44,9 +24,19 @@
     "href": "intro.html#shinylive",
     "title": "1  Adding interactivity for teaching",
     "section": "1.2 shiny(live)!",
-    "text": "1.2 shiny(live)!\nHere are the results:\n#| label: fig-shiny-spline\n#| fig-height: 7\n#| standalone: true\n\nui &lt;- fluidPage(\n  \n  fluidRow(\n    column(1, \n           sliderInput(\n             \"deg_free\", \n             label = \"Spline degrees of freedom:\",\n             min = 3L, value = 3L, max = 8L, step = 1L\n           )\n    ),\n    \n    column(1, \n           plotOutput(\"spline_contours\")\n    )\n  )\n)\n\nserver &lt;- function(input, output) {\n  \n  output$spline_contours &lt;- \n    renderPlot({\n      load(url(\"https://github.com/topepo/shinylive-in-book-test/raw/main/grid_pred.RData\"))\n      preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)\n      \n      p &lt;- \n        preds %&gt;% \n        ggplot(aes(A, B)) + \n        geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +\n        geom_contour(\n          aes(z = .pred_one), \n          breaks = 1/ 2,\n          col = \"black\"\n        ) +\n        lims(x = rngs$A, y = rngs$B)\n      \n      \n      # test base R graphics\n      # hist(preds$.pred_one)\n      \n      print(p)\n      \n    })\n}\n\napp &lt;- shinyApp(ui = ui, server = server)\nThe shiny code is very simple.\nI’d like to be able to use these as Quarto figures (I used a figure-type chunk).",
+    "text": "1.2 shiny(live)!\nHere are the results:\n#| label: fig-shiny-spline\n#| fig-height: 7\n#| standalone: true\n\nui &lt;- fluidPage(\n  \n  fluidRow(\n    column(1, \n           sliderInput(\n             \"deg_free\", \n             label = \"Spline degrees of freedom:\",\n             min = 3L, value = 3L, max = 8L, step = 1L\n           )\n    ),\n    \n    column(1, \n           plotOutput(\"spline_contours\")\n    )\n  )\n)\n\nserver &lt;- function(input, output) {\n  \n  output$spline_contours &lt;- \n    renderPlot({\n      \n      grid_file &lt; tempfile()\n      download.file(\n        \"https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData\",\n        destfile = grid_file)\n      load(grid_file)\n      \n      preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)\n      \n      p &lt;- \n        preds %&gt;% \n        ggplot(aes(A, B)) + \n        geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +\n        geom_contour(\n          aes(z = .pred_one), \n          breaks = 1/ 2,\n          col = \"black\"\n        ) +\n        lims(x = rngs$A, y = rngs$B)\n      \n      \n      # test base R graphics\n      # hist(preds$.pred_one)\n      \n      print(p)\n      \n    })\n}\n\napp &lt;- shinyApp(ui = ui, server = server)\nThe shiny code is very simple.\nI’d like to be able to use these as Quarto figures (I used a figure-type chunk).",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Adding interactivity for teaching</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "2  Summary",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Summary</span>"
     ]
   }
 ]
