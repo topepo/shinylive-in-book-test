@@ -113,7 +113,7 @@ Here are the results:
 ui <- fluidPage(
   
   fluidRow(
-    column(1, 
+    column(8, 
            sliderInput(
              "deg_free", 
              label = "Spline degrees of freedom:",
@@ -121,43 +121,57 @@ ui <- fluidPage(
            )
     ),
     
-    column(1, 
-           plotOutput("spline_contours")
-    )
+    # plotOutput("spline_contours")
+    textOutput("spline_dims")
   )
 )
 
 server <- function(input, output) {
+
+  library(ggplot2)
+  library(dplyr)
   
-  output$spline_contours <- 
-    renderPlot({
-      
-      # ------------------------------------------------------------------------
-      # Input data from remote locations
-      
-      grid_file < tempfile()
-      download.file(
-        "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData",
-        destfile = grid_file)
-      load(grid_file)
-      
-      rngs <- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
+  # ------------------------------------------------------------------------
+  # Input data from remote locations
+  
+  rdata_file <- tempfile()
+  download.file(
+    "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData",
+    destfile = rdata_file)
+  load(rdata_file)
+  download.file(
+    "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/sim_val.RData",
+    destfile = rdata_file)
+  load(rdata_file)
+  
+  rngs <- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
+    
+  output$spline_dims <- 
+    renderPrint({
       
       preds <- dplyr::filter(grid_pred, deg_free == input$deg_free)
+      cat("There were", nrow(preds), "in the filtered daa\n.")
       
-      p <- 
-        preds %>% 
-        ggplot(aes(A, B)) + 
+    })
+  
+  output$spline_contours <-
+    renderPlot({
+
+      preds <- dplyr::filter(grid_pred, deg_free == input$deg_free)
+
+      p <-
+        preds %>%
+        ggplot(aes(A, B)) +
         geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +
         geom_contour(
-          aes(z = .pred_one), 
+          aes(z = .pred_one),
           breaks = 1/ 2,
           col = "black"
         ) +
         lims(x = rngs$A, y = rngs$B)
-      
+
       print(p)
-      
+
     })
 }
 
