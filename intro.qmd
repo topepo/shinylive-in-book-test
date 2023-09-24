@@ -44,6 +44,8 @@ set.seed(943)
 sim_tr  <- sim_logistic(500, f)
 sim_val <- sim_logistic(300, f)
 
+save(sim_val, file = "sim_val.RData")
+
 ## Make a data grid and get its ranges
 
 size <- 100
@@ -130,11 +132,16 @@ server <- function(input, output) {
   output$spline_contours <- 
     renderPlot({
       
+      # ------------------------------------------------------------------------
+      # Input data from remote locations
+      
       grid_file < tempfile()
       download.file(
         "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData",
         destfile = grid_file)
       load(grid_file)
+      
+      rngs <- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
       
       preds <- dplyr::filter(grid_pred, deg_free == input$deg_free)
       
@@ -148,10 +155,6 @@ server <- function(input, output) {
           col = "black"
         ) +
         lims(x = rngs$A, y = rngs$B)
-      
-      
-      # test base R graphics
-      # hist(preds$.pred_one)
       
       print(p)
       
