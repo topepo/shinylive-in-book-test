@@ -1,0 +1,112 @@
+# Creating the data for the app 
+
+The idea is to make a regular grid of values and precompute predictions on a data grid. These values are filtered in the `shiny` app, and the decision boundary can be computed using a contour plot. 
+
+We'll use tidymodels. First, let's load packages and set some options: 
+
+```{r}
+#| label: load-and-sim
+#| message: false
+#| warning: false
+library(tidymodels)
+# Also requires the splines2 package to be installed.
+```
+
+Here are some options that I set. The first line is probably the most important.
+
+```{r}
+tidymodels_prefer()
+theme_set(theme_bw())
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf)
+```
+
+We can simulate data using tidymodels functions from the `modeldata` package: 
+
+```{r}
+f <- expr(-1 - 4 * A - 2 * B - 0.2 * A^2 + 1 * B^2)
+
+set.seed(943)
+sim_tr  <- sim_logistic(500, f)
+sim_val <- sim_logistic(300, f)
+
+print(sim_val, n = 5)
+
+## Make a data grid and get its ranges
+size <- 100
+x_seq <- seq(-4, 4, length.out = size)
+pred_grid <- crossing(A = seq(-3, 3, length.out = size), B = x_seq)
+```
+
+Let's try a logistic regression with spline terms for both predictors (equal degrees of freedom):
+
+```{r}
+#| label: spec-model
+#| message: false
+#| warning: false
+
+model_spec <- logistic_reg()
+model_rec <- 
+  recipe(class ~ ., data = sim_tr) %>% 
+  step_spline_natural(A, B, deg_free = tune())
+model_wflow <- workflow(model_rec, model_spec)
+```
+
+Now we will pre-compute the predictions for each model configuration: 
+
+```{r}
+#| label: grid
+#| message: false
+#| warning: false
+param_grid <- tibble(deg_free = 3:8)
+
+# This will produce predictions on the grid and save them and the original data
+get_grid_pred <- function(x) {
+  augment(x, new_data = pred_grid)
+}
+
+ctrl <- control_grid(extract = get_grid_pred)
+
+model_res <- 
+  model_wflow %>% 
+  tune_grid(resamples = apparent(sim_tr), grid = param_grid, control = ctrl)
+
+# pull out and format the predictions
+predicted_values <- 
+  model_res %>% 
+  collect_extracts() %>% 
+  dplyr::select(deg_free, .extracts) %>% 
+  unnest(.extracts) %>% 
+  dplyr::select(-.pred_class, -.pred_two)
+
+print(predicted_values, n = 5)
+```
+
+The shiny app will not have automatic access to _any_ of the objects in our R workspace. We'll need to load the data into our `shiny` app, so we'll have to download them when it starts. 
+
+To do this, we'll save the files. Since I'm using a GitHub repository, these will be available online via a URL. 
+
+```{r}
+#| label: saves
+save(sim_val, file = "sim_val.RData")
+save(predicted_values, file = "predicted_values.RData")
+```
+
+However, security is important for `webR`, and *not all* programmatic techniques to load/upload data into our app will work. From one of our developers: 
+
+> Because webR runs in the browser, it’s subject to the browser’s security restrictions. That means no socket connections, which is probably how R wants to load that URL when you do `load(url(...))`.
+
+The `webR` version of R has a version of `download.file()` that uses something called an [XHR request](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) and requires the right kinds of headers to come from the source. 
+
+For GitHub, there are "raw" URLs that fit that requirement. For my repo, we can use something like: 
+
+
+```{r}
+#| label: glue-urls
+#| eval: false
+user <- "topepo"
+repo <- "shinylive-in-book-test"
+file <- "predicted_values.RData"
+glue::glue("https://raw.githubusercontent.com/{user}/{repo}/main/{file}")
+```
+
+That's how we will upload our data into the app. 

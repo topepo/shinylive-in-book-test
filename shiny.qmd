@@ -1,0 +1,276 @@
+# shiny(live)!
+
+The Quarto doc will contain the `shiny` app using a code chunk. The type of code chunk should be `{shinylive-r}` (as opposed to `{r}`). 
+
+## yml options
+
+The main requirement for the code chunk yml is the option `standalone: true`. 
+
+For my application, I used the options: 
+
+```yml
+#| label: fig-shiny-spline
+#| viewerHeight: 500
+#| standalone: true
+```
+
+The `label` doesn't make it a figure as it normally would but see the section below for details regarding this (and details like captions, etc.). 
+
+The standard `fig-height` (and width) options don't apply to `shiny` apps; `viewerHeight` is used instead.  
+
+You also have to add a Quarto _filter_ in your `_quarto.yml` file: 
+
+```yml
+filters:
+  - shinylive
+```
+
+There is a bit more to say about formatting the chunk for Quarto but we'll show that later. 
+
+## Package declarations
+
+In our chunk that contains the `shiny` app (i.e., `fig-shiny-spline` in this example), the first few lines should install packages that we need (besides `shiny`): 
+
+```{r}
+#| label: pkg-installs
+#| eval: false
+
+webr::install("ggplot2")
+webr::install("dplyr")
+```
+
+There is no CRAN package called `webr` so don't worry about installing that. 
+
+## User-interface function
+
+The UI function is very simple and has no extra accouterments for shinylive
+
+
+```{r}
+#| label: ui-code
+#| eval: false
+ui <- fluidPage(
+  
+  fluidRow(
+    column(8, 
+           sliderInput(
+             "deg_free", 
+             label = "Spline degrees of freedom:",
+             min = 3L, value = 3L, max = 8L, step = 1L
+           )
+    ),
+    
+    plotOutput("spline_contours", height = "400px")
+  )
+)
+```
+
+## The server function
+
+This is where most of the customization happens. 
+
+```{r}
+#| eval: false
+server <- function(input, output) {
+
+  library(ggplot2)
+  library(dplyr)
+  
+  # ------------------------------------------------------------------------
+  # Input data from remote locations on GitHub
+  
+  pred_path <-                                              # <1>
+    paste(                                                  # <1>
+      "https://raw.githubusercontent.com",                  # <1>
+      "topepo", "shinylive-in-book-test",                   # <1>
+      "main", "predicted_values.RData",                     # <1>
+      sep = "/"                                             # <1>
+    )                                                       # <1>
+  data_path <-                                              # <1>
+    paste(                                                  # <1>
+      "https://raw.githubusercontent.com",                  # <1>
+      "topepo", "shinylive-in-book-test",                   # <1>
+      "main", "sim_val.RData",                              # <1>
+      sep = "/"                                             # <1>
+    )                                                       # <1>
+
+  rdata_file <- tempfile()                                  # <2>
+  download.file(pred_path, destfile = rdata_file)           # <2>
+  load(rdata_file)                                          # <2>
+  download.file(data_path, destfile = rdata_file)           # <2>
+  load(rdata_file)                                          # <2>
+  
+  # Set some ranges for the plot
+  rngs <- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
+
+  output$spline_contours <-
+    renderPlot({
+
+      preds <- dplyr::filter(predicted_values, deg_free == input$deg_free)
+
+      p <-
+        preds %>%
+        ggplot(aes(A, B)) +
+        # Plot the validation set
+        geom_point(
+          data = sim_val, 
+          aes(col = class, pch = class), 
+          alpha = 1 / 2
+        ) +
+        # Show the class boundary
+        geom_contour(
+          aes(z = .pred_one),
+          breaks = 1 / 2,
+          col = "black"
+        ) +
+        # Formatting
+        lims(x = rngs$A, y = rngs$B) +
+        theme_bw() + 
+        theme(legend.position = "top")
+
+      print(p)
+
+    },
+    width = 400, height = 400, res = 200)                   # <3>
+}
+```
+
+1. This block sets up some URLs pointing to the GitHub raw objects. 
+2. Both data sets are downloaded to a temporary file and then loaded into the session. 
+3. Some sizing for the plot and an increase in resolution. 
+
+
+## The results
+
+Our beautiful `shiny` app!
+
+::: {#fig-shiny-spline}
+
+::: {.figure-content}
+
+```{shinylive-r}
+#| label: fig-shiny-spline
+#| viewerHeight: 500
+#| standalone: true
+
+webr::install("ggplot2")
+webr::install("dplyr")
+
+ui <- fluidPage(
+  
+  fluidRow(
+    column(8, 
+           sliderInput(
+             "deg_free", 
+             label = "Spline degrees of freedom:",
+             min = 3L, value = 3L, max = 8L, step = 1L
+           )
+    ),
+    
+    plotOutput("spline_contours", height = "400px")
+  )
+)
+
+server <- function(input, output) {
+  
+  library(ggplot2)
+  library(dplyr)
+  
+  # ------------------------------------------------------------------------
+  # Input data from remote locations on GitHub
+  
+  pred_path <-                                              
+    paste(                                                  
+      "https://raw.githubusercontent.com",                  
+      "topepo", "shinylive-in-book-test",                   
+      "main", "predicted_values.RData",                     
+      sep = "/"                                             
+    )                                                       
+  data_path <-                                              
+    paste(                                                  
+      "https://raw.githubusercontent.com",                  
+      "topepo", "shinylive-in-book-test",                   
+      "main", "sim_val.RData",                              
+      sep = "/"                                             
+    )                                                       
+  
+  rdata_file <- tempfile()                                  
+  download.file(pred_path, destfile = rdata_file)           
+  load(rdata_file)                                          
+  download.file(data_path, destfile = rdata_file)           
+  load(rdata_file)                                          
+  
+  # Set some ranges for the plot
+  rngs <- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
+  
+  output$spline_contours <-
+    renderPlot({
+      
+      preds <- dplyr::filter(predicted_values, deg_free == input$deg_free)
+      
+      p <-
+        preds %>%
+        ggplot(aes(A, B)) +
+        # Plot the validation set
+        geom_point(
+          data = sim_val, 
+          aes(col = class, pch = class), 
+          alpha = 1 / 2
+        ) +
+        # Show the class boundary
+        geom_contour(
+          aes(z = .pred_one),
+          breaks = 1 / 2,
+          col = "black"
+        ) +
+        # Formatting
+        lims(x = rngs$A, y = rngs$B) +
+        theme_bw() + 
+        theme(legend.position = "top")
+      
+      print(p)
+      
+    },
+    width = 400, height = 400, res = 100)                   
+}
+
+app <- shinyApp(ui = ui, server = server)
+```
+:::
+
+A visualization of the class boundary for different numbers of degrees of freedom for natural spline features in `A` and `B`.  
+
+:::
+
+You can reference @fig-shiny-spline in the usual way (via `@fig-shiny-spline`). 
+
+
+## Making the shiny app a figure 
+
+As previously mentioned, following the usual convention of using a `fig-` prefix for a chunk will not make the `shiny` app a figure. However, the [1.4 release of Quarto](https://quarto.org/docs/prerelease/1.4/crossref.html#crossreferenceable-elements-take-arbitrary-content) (pre-release version as of this writing) has a new feature to make anything a specific type of content (such as a figure). 
+
+We use the `:::` syntax to declare the figure and any critical options. In my case above, this was  
+
+````md
+::: {#fig-shiny-spline}
+
+::: {.figure-content}
+
+```{shinylive-r}
+#| label: fig-shiny-spline
+#| viewerHeight: 500
+#| standalone: true
+
+<-- my shiny app code here-->
+
+app <- shinyApp(ui = ui, server = server)
+```
+:::
+
+A visualization of the class boundary for different numbers of degrees of 
+freedom for natural spline features in `A` and `B`.   
+
+:::
+````
+
+You probably don't have to use the same chunk name (`{#fig-shiny-spline}`) in two places; this is the more important place to specify it. I like having them the same. 

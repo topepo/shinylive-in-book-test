@@ -4,15 +4,12 @@ project:
 
 book:
   title: "shinylive-in-book-test"
-  author: "Norah Jones"
-  date: "9/22/2023"
+  author: "Max Kuhn"
   chapters:
     - index.qmd
-    - intro.qmd
-    - summary.qmd
-    - references.qmd
+    - generate-data.qmd
+    - shiny.qmd
 
-bibliography: references.bib
 
 format:
   html:
