@@ -107,7 +107,7 @@ Here are the results:
 
 ```{shinylive-r}
 #| label: fig-shiny-spline
-#| fig-height: 7
+#| viewerHeight: 500
 #| standalone: true
 
 webr::install("ggplot2")
@@ -124,7 +124,7 @@ ui <- fluidPage(
            )
     ),
     
-    plotOutput("spline_contours", height = "800px")
+    plotOutput("spline_contours", height = "400px")
   )
 )
 
@@ -170,11 +170,14 @@ server <- function(input, output) {
           breaks = 1/ 2,
           col = "black"
         ) +
-        lims(x = rngs$A, y = rngs$B)
+        lims(x = rngs$A, y = rngs$B) +
+        theme_bw() + 
+        theme(legend.position = "top")
 
       print(p)
 
-    })
+    },
+    width = 400, height = 400, res = 100)
 }
 
 app <- shinyApp(ui = ui, server = server)

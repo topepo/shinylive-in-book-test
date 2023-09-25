@@ -281,7 +281,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="1.2" class="anchored" data-anchor-id="shinylive"><span class="header-section-number">1.2</span> shiny(live)!</h2>
 <p>Here are the results:</p>
 <pre class="shinylive-r" data-engine="r"><code>#| label: fig-shiny-spline
-#| fig-height: 7
+#| viewerHeight: 500
 #| standalone: true
 
 webr::install("ggplot2")
@@ -298,7 +298,7 @@ ui &lt;- fluidPage(
            )
     ),
     
-    plotOutput("spline_contours", height = "800px")
+    plotOutput("spline_contours", height = "400px")
   )
 )
 
@@ -344,11 +344,14 @@ server &lt;- function(input, output) {
           breaks = 1/ 2,
           col = "black"
         ) +
-        lims(x = rngs$A, y = rngs$B)
+        lims(x = rngs$A, y = rngs$B) +
+        theme_bw() + 
+        theme(legend.position = "top")
 
       print(p)
 
-    })
+    },
+    width = 400, height = 400, res = 100)
 }
 
 app &lt;- shinyApp(ui = ui, server = server)</code></pre>
