@@ -110,6 +110,9 @@ Here are the results:
 #| fig-height: 7
 #| standalone: true
 
+webr::install("ggplot2")
+webr::install("dplyr")
+
 ui <- fluidPage(
   
   fluidRow(
@@ -121,8 +124,7 @@ ui <- fluidPage(
            )
     ),
     
-    # plotOutput("spline_contours")
-    textOutput("spline_dims")
+    plotOutput("spline_contours", height = "800px")
   )
 )
 

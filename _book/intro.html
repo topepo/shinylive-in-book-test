@@ -232,13 +232,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>sim_tr  <span class="ot">&lt;-</span> <span class="fu">sim_logistic</span>(<span class="dv">500</span>, f)</span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>sim_val <span class="ot">&lt;-</span> <span class="fu">sim_logistic</span>(<span class="dv">300</span>, f)</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="do">## Make a data grid and get its ranges</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(sim_val, <span class="at">file =</span> <span class="st">"sim_val.RData"</span>)</span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>size <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>x_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>, <span class="dv">4</span>, <span class="at">length.out =</span> size)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>pred_grid <span class="ot">&lt;-</span> <span class="fu">crossing</span>(<span class="at">A =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> size), <span class="at">B =</span> x_seq)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>rngs <span class="ot">&lt;-</span> <span class="fu">map</span>(pred_grid, extendrange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="do">## Make a data grid and get its ranges</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>size <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>x_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">4</span>, <span class="dv">4</span>, <span class="at">length.out =</span> size)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>pred_grid <span class="ot">&lt;-</span> <span class="fu">crossing</span>(<span class="at">A =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> size), <span class="at">B =</span> x_seq)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>rngs <span class="ot">&lt;-</span> <span class="fu">map</span>(pred_grid, extendrange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Let’s try a logistic regression with spline terms for both predictors (equal degrees of freedom):</p>
 <div class="cell">
@@ -282,10 +284,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 #| fig-height: 7
 #| standalone: true
 
+webr::install("ggplot2")
+webr::install("dplyr")
+
 ui &lt;- fluidPage(
   
   fluidRow(
-    column(1, 
+    column(8, 
            sliderInput(
              "deg_free", 
              label = "Spline degrees of freedom:",
@@ -293,42 +298,56 @@ ui &lt;- fluidPage(
            )
     ),
     
-    column(1, 
-           plotOutput("spline_contours")
-    )
+    plotOutput("spline_contours", height = "800px")
   )
 )
 
 server &lt;- function(input, output) {
+
+  library(ggplot2)
+  library(dplyr)
   
-  output$spline_contours &lt;- 
-    renderPlot({
-      
-      grid_file &lt; tempfile()
-      download.file(
-        "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData",
-        destfile = grid_file)
-      load(grid_file)
+  # ------------------------------------------------------------------------
+  # Input data from remote locations
+  
+  rdata_file &lt;- tempfile()
+  download.file(
+    "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/grid_pred.RData",
+    destfile = rdata_file)
+  load(rdata_file)
+  download.file(
+    "https://raw.githubusercontent.com/topepo/shinylive-in-book-test/main/sim_val.RData",
+    destfile = rdata_file)
+  load(rdata_file)
+  
+  rngs &lt;- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
+    
+  output$spline_dims &lt;- 
+    renderPrint({
       
       preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)
+      cat("There were", nrow(preds), "in the filtered daa\n.")
       
-      p &lt;- 
-        preds %&gt;% 
-        ggplot(aes(A, B)) + 
+    })
+  
+  output$spline_contours &lt;-
+    renderPlot({
+
+      preds &lt;- dplyr::filter(grid_pred, deg_free == input$deg_free)
+
+      p &lt;-
+        preds %&gt;%
+        ggplot(aes(A, B)) +
         geom_point(data = sim_val, aes(col = class, pch = class), alpha = 1 / 2) +
         geom_contour(
-          aes(z = .pred_one), 
+          aes(z = .pred_one),
           breaks = 1/ 2,
           col = "black"
         ) +
         lims(x = rngs$A, y = rngs$B)
-      
-      
-      # test base R graphics
-      # hist(preds$.pred_one)
-      
+
       print(p)
-      
+
     })
 }
 
