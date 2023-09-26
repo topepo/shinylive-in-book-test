@@ -1,9 +1,54 @@
 # Preface {.unnumbered}
 
-This is a Quarto book.
+```{r}
+#| label: setup
+#| include: false
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+library(lubridate)
+library(sessioninfo)
+library(ggplot2)
+library(shinylive)
+```
+
+
+For writing online books (with Quarto), I'd like to be able to demonstrate concepts and results dynamically. To some extent, we can do this with [`gganimate`](https://gganimate.com), but it is very limiting. 
+
+We'd like to use [`shiny`](https://shiny.posit.co). At the 2023 posit conference, Joe Cheng unveiled [`shinylive-r`](https://github.com/posit-dev/shinylive), a tool to embed R and `shiny` into a webpage using WebAssembly (aka Wasm) using [`webR`](https://docs.r-wasm.org/webr/latest/). 
+
+This repo is a _work in progress_ since we (Posit) have not fully worked out all of the details (as of today: `r today()`). Also, initial testing will allow developers to make APIs to make things more easy to use. 
+
+The example use case that I'll use to test is to show how [natural splines](https://towardsdatascience.com/numerical-interpolation-natural-cubic-spline-52c1157b98ac) can affect the classification boundaries produced via logistic regression. Using a simulated data set, we want to show the resulting class boundary curve for a given number of degrees of freedom for the splines. The user should be able to modify these and see the results. 
+
+The next "chapter" has code to pre-compute the results instead of doing them in `shiny` (which might be too time-consuming). You can skip that if you are not interested; we generate a validation set of data points (`sim_val`) to plot and a data frame of predictions that are used to compute the class boundaries using a contour plot (`predicted_values`). These are the main inputs in the `shiny` app. 
+
+The third chapter is about the `shiny` app. 
+
+## Software
+
+I used a recent version of R (`r R.version.string`), the latest daily release of the RStudio IDE, and the latest quarto (version `r system("quarto --version", intern = TRUE)`). 
+
+I installed the `shinylive` Quarto extension: 
+
+```bash
+shell> quarto add quarto-ext/shinylive
+```
+
+and also the corresponding R package (I suggest using R's `pak` package): 
+
+
+```r
+R> pak::pak("posit-dev/r-shinylive")
+```
+
+Versions: 
 
 ```{r}
-1 + 1
+#| label: si 
+#| echo: false
+
+session_info()
 ```
+
+## Thanks
+
+Thanks to George Stagg, Joe Cheng, Winston Chang, and everyone else who made `webR` and `shinylive` happen. 
