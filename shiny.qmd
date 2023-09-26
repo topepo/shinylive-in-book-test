@@ -29,14 +29,13 @@ There is a bit more to say about formatting the chunk for Quarto but we'll show 
 
 ## Package declarations
 
-In our chunk that contains the `shiny` app (i.e., `fig-shiny-spline` in this example), the first few lines should install packages that we need (besides `shiny`): 
+In our chunk that contains the `shiny` app (i.e., `fig-shiny-spline` in this example), let's make sure to install packages that we need (besides `shiny`): 
 
 ```{r}
 #| label: pkg-installs
 #| eval: false
 
 webr::install("ggplot2")
-webr::install("dplyr")
 ```
 
 The base installation of webR includes its own `webr` utility package, so don't worry about installing that. 
@@ -74,8 +73,7 @@ This is where most of the customization happens.
 server <- function(input, output) {
 
   library(ggplot2)
-  library(dplyr)
-  
+
   # ------------------------------------------------------------------------
   # Input data from remote locations on GitHub
   
@@ -106,11 +104,10 @@ server <- function(input, output) {
   output$spline_contours <-
     renderPlot({
 
-      preds <- dplyr::filter(predicted_values, deg_free == input$deg_free)
+      preds <- predicted_values[predicted_values$deg_free == input$deg_free,]
 
       p <-
-        preds %>%
-        ggplot(aes(A, B)) +
+        ggplot(preds, aes(A, B)) +
         # Plot the validation set
         geom_point(
           data = sim_val, 
@@ -154,7 +151,6 @@ Our beautiful `shiny` app!
 #| standalone: true
 
 webr::install("ggplot2")
-webr::install("dplyr")
 
 ui <- fluidPage(
   
@@ -174,7 +170,6 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   library(ggplot2)
-  library(dplyr)
   
   # ------------------------------------------------------------------------
   # Input data from remote locations on GitHub
@@ -206,11 +201,10 @@ server <- function(input, output) {
   output$spline_contours <-
     renderPlot({
       
-      preds <- dplyr::filter(predicted_values, deg_free == input$deg_free)
+      preds <- predicted_values[predicted_values$deg_free == input$deg_free,]
       
       p <-
-        preds %>%
-        ggplot(aes(A, B)) +
+        ggplot(preds, aes(A, B)) +
         # Plot the validation set
         geom_point(
           data = sim_val, 
