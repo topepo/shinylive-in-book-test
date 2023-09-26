@@ -93,11 +93,9 @@ save(predicted_values, file = "predicted_values.RData")
 
 However, security is important for `webR`, and *not all* programmatic techniques to load/upload data into our app will work. From one of our developers: 
 
-> Because webR runs in the browser, it’s subject to the browser’s security restrictions. That means no socket connections, which is probably how R wants to load that URL when you do `load(url(...))`.
+> Because webR runs in the browser, it’s subject to the browser’s security restrictions. As such, downloading data from cross-origin sources is restricted by the [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) mechanism. The browser will only download data from web servers that permit it to do so by including the [relevant HTTP headers](https://developer.mozilla.org/en-US/docs/Glossary/CORS) in its responses.
 
-The `webR` version of R has a version of `download.file()` that uses something called an [XHR request](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) and requires the right kinds of headers to come from the source. 
-
-For GitHub, there are "raw" URLs that fit that requirement. For my repo, we can use something like: 
+This is why using URLs from [github.com](github.com) do not work, but ones from [raw.githubusercontent.com](raw.githubusercontent.com) can be used. For my repo, we can use something like: 
 
 
 ```{r}
