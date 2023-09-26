@@ -39,7 +39,7 @@ webr::install("ggplot2")
 webr::install("dplyr")
 ```
 
-There is no CRAN package called `webr` so don't worry about installing that. 
+The base installation of webR includes its own `webr` utility package, so don't worry about installing that. 
 
 ## User-interface function
 
