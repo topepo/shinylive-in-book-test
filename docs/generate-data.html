@@ -275,10 +275,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>However, security is important for <code>webR</code>, and <em>not all</em> programmatic techniques to load/upload data into our app will work. From one of our developers:</p>
 <blockquote class="blockquote">
-<p>Because webR runs in the browser, it’s subject to the browser’s security restrictions. That means no socket connections, which is probably how R wants to load that URL when you do <code>load(url(...))</code>.</p>
+<p>Because webR runs in the browser, it’s subject to the browser’s security restrictions. As such, downloading data from cross-origin sources is restricted by the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">CORS</a> mechanism. The browser will only download data from web servers that permit it to do so by including the <a href="https://developer.mozilla.org/en-US/docs/Glossary/CORS">relevant HTTP headers</a> in its responses.</p>
 </blockquote>
-<p>The <code>webR</code> version of R has a version of <code>download.file()</code> that uses something called an <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">XHR request</a> and requires the right kinds of headers to come from the source.</p>
-<p>For GitHub, there are “raw” URLs that fit that requirement. For my repo, we can use something like:</p>
+<p>This is why using URLs from <a href="github.com">github.com</a> do not work, but ones from <a href="raw.githubusercontent.com">raw.githubusercontent.com</a> can be used. For my repo, we can use something like:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>user <span class="ot">&lt;-</span> <span class="st">"topepo"</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>repo <span class="ot">&lt;-</span> <span class="st">"shinylive-in-book-test"</span></span>

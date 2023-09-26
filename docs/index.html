@@ -206,7 +206,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 class="unnumbered">Preface</h1>
 <p>For writing online books (with Quarto), I’d like to be able to demonstrate concepts and results dynamically. To some extent, we can do this with <a href="https://gganimate.com"><code>gganimate</code></a>, but it is very limiting.</p>
 <p>We’d like to use <a href="https://shiny.posit.co"><code>shiny</code></a>. At the 2023 posit conference, Joe Cheng unveiled <a href="https://github.com/posit-dev/shinylive"><code>shinylive-r</code></a>, a tool to embed R and <code>shiny</code> into a webpage using WebAssembly (aka Wasm) using <a href="https://docs.r-wasm.org/webr/latest/"><code>webR</code></a>.</p>
-<p>This repo is a <em>work in progress</em> since we (Posit) have not fully worked out all of the details (as of today: 2023-09-25). Also, initial testing will allow developers to make APIs to make things more easy to use.</p>
+<p>This repo is a <em>work in progress</em> since we (Posit) have not fully worked out all of the details (as of today: 2023-09-26). Also, initial testing will allow developers to make APIs to make things more easy to use.</p>
 <p>The example use case that I’ll use to test is to show how <a href="https://towardsdatascience.com/numerical-interpolation-natural-cubic-spline-52c1157b98ac">natural splines</a> can affect the classification boundaries produced via logistic regression. Using a simulated data set, we want to show the resulting class boundary curve for a given number of degrees of freedom for the splines. The user should be able to modify these and see the results.</p>
 <p>The next “chapter” has code to pre-compute the results instead of doing them in <code>shiny</code> (which might be too time-consuming). You can skip that if you are not interested; we generate a validation set of data points (<code>sim_val</code>) to plot and a data frame of predictions that are used to compute the class boundaries using a contour plot (<code>predicted_values</code>). These are the main inputs in the <code>shiny</code> app.</p>
 <p>The third chapter is about the <code>shiny</code> app.</p>
@@ -230,7 +230,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       America/New_York
- date     2023-09-25
+ date     2023-09-26
  pandoc   3.1.1 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────

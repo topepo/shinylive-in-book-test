@@ -206,9 +206,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="2.1" class="anchored" data-anchor-id="yml-options"><span class="header-section-number">2.1</span> yml options</h2>
 <p>The main requirement for the code chunk yml is the option <code>standalone: true</code>.</p>
 <p>For my application, I used the options:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-shiny-spline</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| viewerHeight: 500</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| standalone: true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="at">```{shinylive-r}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-shiny-spline</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| viewerHeight: 500</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| standalone: true</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The <code>label</code> doesn’t make it a figure as it normally would but see the section below for details regarding this (and details like captions, etc.).</p>
 <p>The standard <code>fig-height</code> (and width) options don’t apply to <code>shiny</code> apps; <code>viewerHeight</code> is used instead.</p>
 <p>You also have to add a Quarto <em>filter</em> in your <code>_quarto.yml</code> file:</p>
@@ -220,7 +221,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="2.2" class="anchored" data-anchor-id="package-declarations"><span class="header-section-number">2.2</span> Package declarations</h2>
 <p>In our chunk that contains the <code>shiny</code> app (i.e., <code>fig-shiny-spline</code> in this example), let’s make sure to install packages that we need (besides <code>shiny</code>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>webr<span class="sc">::</span><span class="fu">install</span>(<span class="st">"ggplot2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>webr<span class="sc">::</span><span class="fu">install</span>(<span class="st">"ggplot2"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>webr<span class="sc">::</span><span class="fu">install</span>(<span class="st">"htmltools"</span>)   <span class="co">#&lt;- only needed to use SVG images </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The base installation of webR includes its own <code>webr</code> utility package, so don’t worry about installing that.</p>
 </section>
@@ -239,7 +241,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>           )</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plotOutput</span>(<span class="st">"spline_contours"</span>, <span class="at">height =</span> <span class="st">"400px"</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">imageOutput</span>(<span class="st">"spline_contours"</span>, <span class="at">height =</span> <span class="st">"400px"</span>)</span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -248,79 +250,92 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="2.4" class="anchored" data-anchor-id="the-server-function"><span class="header-section-number">2.4</span> The server function</h2>
 <p>This is where most of the customization happens.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
-<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(ggplot2)</span>
-<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ------------------------------------------------------------------------</span></span>
-<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Input data from remote locations on GitHub</span></span>
-<span id="annotated-cell-5-7"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-8" class="code-annotation-target"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>  pred_path <span class="ot">&lt;-</span></span>
-<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(</span>
-<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">"https://raw.githubusercontent.com"</span>,</span>
-<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>      <span class="st">"topepo"</span>, <span class="st">"shinylive-in-book-test"</span>,</span>
-<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>      <span class="st">"main"</span>, <span class="st">"predicted_values.RData"</span>,</span>
-<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">sep =</span> <span class="st">"/"</span></span>
-<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a>  data_path <span class="ot">&lt;-</span></span>
-<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(</span>
-<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>      <span class="st">"https://raw.githubusercontent.com"</span>,</span>
-<span id="annotated-cell-5-18"><a href="#annotated-cell-5-18" aria-hidden="true" tabindex="-1"></a>      <span class="st">"topepo"</span>, <span class="st">"shinylive-in-book-test"</span>,</span>
-<span id="annotated-cell-5-19"><a href="#annotated-cell-5-19" aria-hidden="true" tabindex="-1"></a>      <span class="st">"main"</span>, <span class="st">"sim_val.RData"</span>,</span>
-<span id="annotated-cell-5-20"><a href="#annotated-cell-5-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">sep =</span> <span class="st">"/"</span></span>
-<span id="annotated-cell-5-21"><a href="#annotated-cell-5-21" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="annotated-cell-5-22"><a href="#annotated-cell-5-22" aria-hidden="true" tabindex="-1"></a></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-23" class="code-annotation-target"><a href="#annotated-cell-5-23" aria-hidden="true" tabindex="-1"></a>  rdata_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
-<span id="annotated-cell-5-24"><a href="#annotated-cell-5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(pred_path, <span class="at">destfile =</span> rdata_file)</span>
-<span id="annotated-cell-5-25"><a href="#annotated-cell-5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">load</span>(rdata_file)</span>
-<span id="annotated-cell-5-26"><a href="#annotated-cell-5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(data_path, <span class="at">destfile =</span> rdata_file)</span>
-<span id="annotated-cell-5-27"><a href="#annotated-cell-5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">load</span>(rdata_file)</span>
-<span id="annotated-cell-5-28"><a href="#annotated-cell-5-28" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="annotated-cell-5-29"><a href="#annotated-cell-5-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set some ranges for the plot</span></span>
-<span id="annotated-cell-5-30"><a href="#annotated-cell-5-30" aria-hidden="true" tabindex="-1"></a>  rngs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">A =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">3.3</span>, <span class="fl">3.3</span>), <span class="at">B =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">4.4</span>, <span class="fl">4.4</span>))</span>
-<span id="annotated-cell-5-31"><a href="#annotated-cell-5-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-32"><a href="#annotated-cell-5-32" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>spline_contours <span class="ot">&lt;-</span></span>
-<span id="annotated-cell-5-33"><a href="#annotated-cell-5-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">renderPlot</span>({</span>
-<span id="annotated-cell-5-34"><a href="#annotated-cell-5-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-35"><a href="#annotated-cell-5-35" aria-hidden="true" tabindex="-1"></a>      preds <span class="ot">&lt;-</span> predicted_values[predicted_values<span class="sc">$</span>deg_free <span class="sc">==</span> input<span class="sc">$</span>deg_free,]</span>
-<span id="annotated-cell-5-36"><a href="#annotated-cell-5-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-37"><a href="#annotated-cell-5-37" aria-hidden="true" tabindex="-1"></a>      p <span class="ot">&lt;-</span></span>
-<span id="annotated-cell-5-38"><a href="#annotated-cell-5-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(preds, <span class="fu">aes</span>(A, B)) <span class="sc">+</span></span>
-<span id="annotated-cell-5-39"><a href="#annotated-cell-5-39" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Plot the validation set</span></span>
-<span id="annotated-cell-5-40"><a href="#annotated-cell-5-40" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_point</span>(</span>
-<span id="annotated-cell-5-41"><a href="#annotated-cell-5-41" aria-hidden="true" tabindex="-1"></a>          <span class="at">data =</span> sim_val, </span>
-<span id="annotated-cell-5-42"><a href="#annotated-cell-5-42" aria-hidden="true" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">col =</span> class, <span class="at">pch =</span> class), </span>
-<span id="annotated-cell-5-43"><a href="#annotated-cell-5-43" aria-hidden="true" tabindex="-1"></a>          <span class="at">alpha =</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="annotated-cell-5-44"><a href="#annotated-cell-5-44" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
-<span id="annotated-cell-5-45"><a href="#annotated-cell-5-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Show the class boundary</span></span>
-<span id="annotated-cell-5-46"><a href="#annotated-cell-5-46" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_contour</span>(</span>
-<span id="annotated-cell-5-47"><a href="#annotated-cell-5-47" aria-hidden="true" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">z =</span> .pred_one),</span>
-<span id="annotated-cell-5-48"><a href="#annotated-cell-5-48" aria-hidden="true" tabindex="-1"></a>          <span class="at">breaks =</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-5-1"><a href="#annotated-cell-5-1" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ------------------------------------------------------------------------</span></span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Input data from remote locations on GitHub</span></span>
+<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-6" class="code-annotation-target"><a href="#annotated-cell-5-6" aria-hidden="true" tabindex="-1"></a>  pred_path <span class="ot">&lt;-</span></span>
+<span id="annotated-cell-5-7"><a href="#annotated-cell-5-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(                                                  </span>
+<span id="annotated-cell-5-8"><a href="#annotated-cell-5-8" aria-hidden="true" tabindex="-1"></a>      <span class="st">"https://raw.githubusercontent.com"</span>,                  </span>
+<span id="annotated-cell-5-9"><a href="#annotated-cell-5-9" aria-hidden="true" tabindex="-1"></a>      <span class="st">"topepo"</span>, <span class="st">"shinylive-in-book-test"</span>,                   </span>
+<span id="annotated-cell-5-10"><a href="#annotated-cell-5-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">"main"</span>, <span class="st">"predicted_values.RData"</span>,                     </span>
+<span id="annotated-cell-5-11"><a href="#annotated-cell-5-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">sep =</span> <span class="st">"/"</span>                                             </span>
+<span id="annotated-cell-5-12"><a href="#annotated-cell-5-12" aria-hidden="true" tabindex="-1"></a>    )                                                       </span>
+<span id="annotated-cell-5-13"><a href="#annotated-cell-5-13" aria-hidden="true" tabindex="-1"></a>  data_path <span class="ot">&lt;-</span>                                              </span>
+<span id="annotated-cell-5-14"><a href="#annotated-cell-5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(                                                  </span>
+<span id="annotated-cell-5-15"><a href="#annotated-cell-5-15" aria-hidden="true" tabindex="-1"></a>      <span class="st">"https://raw.githubusercontent.com"</span>,                  </span>
+<span id="annotated-cell-5-16"><a href="#annotated-cell-5-16" aria-hidden="true" tabindex="-1"></a>      <span class="st">"topepo"</span>, <span class="st">"shinylive-in-book-test"</span>,                   </span>
+<span id="annotated-cell-5-17"><a href="#annotated-cell-5-17" aria-hidden="true" tabindex="-1"></a>      <span class="st">"main"</span>, <span class="st">"sim_val.RData"</span>,                              </span>
+<span id="annotated-cell-5-18"><a href="#annotated-cell-5-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">sep =</span> <span class="st">"/"</span>                                             </span>
+<span id="annotated-cell-5-19"><a href="#annotated-cell-5-19" aria-hidden="true" tabindex="-1"></a>    )                                                       </span>
+<span id="annotated-cell-5-20"><a href="#annotated-cell-5-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-5-21" class="code-annotation-target"><a href="#annotated-cell-5-21" aria-hidden="true" tabindex="-1"></a>  rdata_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="annotated-cell-5-22"><a href="#annotated-cell-5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(pred_path, <span class="at">destfile =</span> rdata_file)           </span>
+<span id="annotated-cell-5-23"><a href="#annotated-cell-5-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">load</span>(rdata_file)                                          </span>
+<span id="annotated-cell-5-24"><a href="#annotated-cell-5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(data_path, <span class="at">destfile =</span> rdata_file)           </span>
+<span id="annotated-cell-5-25"><a href="#annotated-cell-5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">load</span>(rdata_file)                                          </span>
+<span id="annotated-cell-5-26"><a href="#annotated-cell-5-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-27"><a href="#annotated-cell-5-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set some ranges for the plot</span></span>
+<span id="annotated-cell-5-28"><a href="#annotated-cell-5-28" aria-hidden="true" tabindex="-1"></a>  rngs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">A =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">3.3</span>, <span class="fl">3.3</span>), <span class="at">B =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">4.4</span>, <span class="fl">4.4</span>))</span>
+<span id="annotated-cell-5-29"><a href="#annotated-cell-5-29" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="annotated-cell-5-30"><a href="#annotated-cell-5-30" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>spline_contours <span class="ot">&lt;-</span></span>
+<span id="annotated-cell-5-31"><a href="#annotated-cell-5-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">renderImage</span>({</span>
+<span id="annotated-cell-5-32"><a href="#annotated-cell-5-32" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="annotated-cell-5-33"><a href="#annotated-cell-5-33" aria-hidden="true" tabindex="-1"></a>      preds <span class="ot">&lt;-</span> predicted_values[predicted_values<span class="sc">$</span>deg_free <span class="sc">==</span> input<span class="sc">$</span>deg_free,]</span>
+<span id="annotated-cell-5-34"><a href="#annotated-cell-5-34" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="annotated-cell-5-35"><a href="#annotated-cell-5-35" aria-hidden="true" tabindex="-1"></a>      p <span class="ot">&lt;-</span></span>
+<span id="annotated-cell-5-36"><a href="#annotated-cell-5-36" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ggplot</span>(preds, <span class="fu">aes</span>(A, B)) <span class="sc">+</span></span>
+<span id="annotated-cell-5-37"><a href="#annotated-cell-5-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Plot the validation set</span></span>
+<span id="annotated-cell-5-38"><a href="#annotated-cell-5-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_point</span>(</span>
+<span id="annotated-cell-5-39"><a href="#annotated-cell-5-39" aria-hidden="true" tabindex="-1"></a>          <span class="at">data =</span> sim_val, </span>
+<span id="annotated-cell-5-40"><a href="#annotated-cell-5-40" aria-hidden="true" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">col =</span> class, <span class="at">pch =</span> class), </span>
+<span id="annotated-cell-5-41"><a href="#annotated-cell-5-41" aria-hidden="true" tabindex="-1"></a>          <span class="at">alpha =</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
+<span id="annotated-cell-5-42"><a href="#annotated-cell-5-42" aria-hidden="true" tabindex="-1"></a>          <span class="at">cex =</span> <span class="dv">3</span></span>
+<span id="annotated-cell-5-43"><a href="#annotated-cell-5-43" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
+<span id="annotated-cell-5-44"><a href="#annotated-cell-5-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Show the class boundary</span></span>
+<span id="annotated-cell-5-45"><a href="#annotated-cell-5-45" aria-hidden="true" tabindex="-1"></a>        <span class="fu">geom_contour</span>(</span>
+<span id="annotated-cell-5-46"><a href="#annotated-cell-5-46" aria-hidden="true" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">z =</span> .pred_one),</span>
+<span id="annotated-cell-5-47"><a href="#annotated-cell-5-47" aria-hidden="true" tabindex="-1"></a>          <span class="at">breaks =</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
+<span id="annotated-cell-5-48"><a href="#annotated-cell-5-48" aria-hidden="true" tabindex="-1"></a>          <span class="at">linewidth =</span> <span class="dv">3</span> <span class="sc">/</span> <span class="dv">2</span>,</span>
 <span id="annotated-cell-5-49"><a href="#annotated-cell-5-49" aria-hidden="true" tabindex="-1"></a>          <span class="at">col =</span> <span class="st">"black"</span></span>
 <span id="annotated-cell-5-50"><a href="#annotated-cell-5-50" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
 <span id="annotated-cell-5-51"><a href="#annotated-cell-5-51" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Formatting</span></span>
 <span id="annotated-cell-5-52"><a href="#annotated-cell-5-52" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lims</span>(<span class="at">x =</span> rngs<span class="sc">$</span>A, <span class="at">y =</span> rngs<span class="sc">$</span>B) <span class="sc">+</span></span>
 <span id="annotated-cell-5-53"><a href="#annotated-cell-5-53" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
 <span id="annotated-cell-5-54"><a href="#annotated-cell-5-54" aria-hidden="true" tabindex="-1"></a>        <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>)</span>
-<span id="annotated-cell-5-55"><a href="#annotated-cell-5-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-56"><a href="#annotated-cell-5-56" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(p)</span>
-<span id="annotated-cell-5-57"><a href="#annotated-cell-5-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-5-58"><a href="#annotated-cell-5-58" aria-hidden="true" tabindex="-1"></a>    },</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-59" class="code-annotation-target"><a href="#annotated-cell-5-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="dv">400</span>, <span class="at">height =</span> <span class="dv">400</span>, <span class="at">res =</span> <span class="dv">200</span>)</span>
-<span id="annotated-cell-5-60"><a href="#annotated-cell-5-60" aria-hidden="true" tabindex="-1"></a>}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-5-55"><a href="#annotated-cell-5-55" aria-hidden="true" tabindex="-1"></a>      </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-5-56" class="code-annotation-target"><a href="#annotated-cell-5-56" aria-hidden="true" tabindex="-1"></a>      file <span class="ot">&lt;-</span></span>
+<span id="annotated-cell-5-57"><a href="#annotated-cell-5-57" aria-hidden="true" tabindex="-1"></a>        htmltools<span class="sc">::</span><span class="fu">capturePlot</span>(</span>
+<span id="annotated-cell-5-58"><a href="#annotated-cell-5-58" aria-hidden="true" tabindex="-1"></a>          <span class="fu">print</span>(p), </span>
+<span id="annotated-cell-5-59"><a href="#annotated-cell-5-59" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">".svg"</span>),</span>
+<span id="annotated-cell-5-60"><a href="#annotated-cell-5-60" aria-hidden="true" tabindex="-1"></a>          grDevices<span class="sc">::</span>svg,</span>
+<span id="annotated-cell-5-61"><a href="#annotated-cell-5-61" aria-hidden="true" tabindex="-1"></a>          <span class="at">width =</span> <span class="dv">4</span>, </span>
+<span id="annotated-cell-5-62"><a href="#annotated-cell-5-62" aria-hidden="true" tabindex="-1"></a>          <span class="at">height =</span> <span class="dv">4</span></span>
+<span id="annotated-cell-5-63"><a href="#annotated-cell-5-63" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="annotated-cell-5-64"><a href="#annotated-cell-5-64" aria-hidden="true" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">src =</span> file)</span>
+<span id="annotated-cell-5-65"><a href="#annotated-cell-5-65" aria-hidden="true" tabindex="-1"></a>    }, </span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-5-66" class="code-annotation-target"><a href="#annotated-cell-5-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">deleteFile =</span> <span class="cn">TRUE</span>)</span>
+<span id="annotated-cell-5-67"><a href="#annotated-cell-5-67" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="annotated-cell-5-68"><a href="#annotated-cell-5-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-5-69"><a href="#annotated-cell-5-69" aria-hidden="true" tabindex="-1"></a>app <span class="ot">&lt;-</span> <span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="8,9,10,11,12,13,14,15,16,17,18,19,20,21" data-code-annotation="1">This block sets up some URLs pointing to the GitHub raw objects.</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="6" data-code-annotation="1">This block sets up URLs pointing to the GitHub raw objects.</span>
 </dd>
 <dt data-target-cell="annotated-cell-5" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="23,24,25,26,27" data-code-annotation="2">Both data sets are downloaded to a temporary file and then loaded into the session.</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="21" data-code-annotation="2">Both data sets are downloaded to a temporary file and loaded into the session.</span>
 </dd>
 <dt data-target-cell="annotated-cell-5" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-5" data-code-lines="59" data-code-annotation="3">Some sizing for the plot and an increase in resolution.</span>
+<span data-code-cell="annotated-cell-5" data-code-lines="56" data-code-annotation="3">Code allowing us to save the visualization as an SVG image. This is an aesthetic choice and unrelated to the point of this repo.</span>
+</dd>
+<dt data-target-cell="annotated-cell-5" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="66" data-code-annotation="4">Clean up the SVG file passed between the server and UI.</span>
 </dd>
 </dl>
 </div>
@@ -334,10 +349,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div aria-describedby="fig-shiny-spline-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="figure-content">
 <pre class="shinylive-r" data-engine="r"><code>#| label: fig-shiny-spline
-#| viewerHeight: 500
+#| viewerHeight: 505
 #| standalone: true
-
 webr::install("ggplot2")
+webr::install("htmltools")
+
+library(ggplot2)
+library(htmltools)
 
 ui &lt;- fluidPage(
   
@@ -350,13 +368,11 @@ ui &lt;- fluidPage(
            )
     ),
     
-    plotOutput("spline_contours", height = "400px")
+    imageOutput("spline_contours")
   )
 )
 
-server &lt;- function(input, output) {
-  
-  library(ggplot2)
+server &lt;- function(input, output, session) {
   
   # ------------------------------------------------------------------------
   # Input data from remote locations on GitHub
@@ -386,7 +402,7 @@ server &lt;- function(input, output) {
   rngs &lt;- list(A = c(-3.3, 3.3), B = c(-4.4, 4.4))
   
   output$spline_contours &lt;-
-    renderPlot({
+    renderImage({
       
       preds &lt;- predicted_values[predicted_values$deg_free == input$deg_free,]
       
@@ -396,12 +412,14 @@ server &lt;- function(input, output) {
         geom_point(
           data = sim_val, 
           aes(col = class, pch = class), 
-          alpha = 1 / 2
+          alpha = 1 / 2,
+          cex = 3
         ) +
         # Show the class boundary
         geom_contour(
           aes(z = .pred_one),
           breaks = 1 / 2,
+          linewidth = 3 / 2,
           col = "black"
         ) +
         # Formatting
@@ -409,10 +427,17 @@ server &lt;- function(input, output) {
         theme_bw() + 
         theme(legend.position = "top")
       
-      print(p)
-      
-    },
-    width = 400, height = 400, res = 100)                   
+      file &lt;- 
+        htmltools::capturePlot(
+          print(p), 
+          tempfile(fileext = ".svg"),
+          grDevices::svg,
+          width = 4, 
+          height = 4
+        )
+      list(src = file)
+    }, 
+    deleteFile = TRUE)               
 }
 
 app &lt;- shinyApp(ui = ui, server = server)</code></pre>

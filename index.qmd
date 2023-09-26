@@ -15,7 +15,7 @@ For writing online books (with Quarto), I'd like to be able to demonstrate conce
 
 We'd like to use [`shiny`](https://shiny.posit.co). At the 2023 posit conference, Joe Cheng unveiled [`shinylive-r`](https://github.com/posit-dev/shinylive), a tool to embed R and `shiny` into a webpage using WebAssembly (aka Wasm) using [`webR`](https://docs.r-wasm.org/webr/latest/). 
 
-This repo is a _work in progress_ since we (Posit) have not fully worked out all of the details (as of today: `r today()`). Also, initial testing will allow developers to make APIs to make things more easy to use. 
+This repo is a _work in progress_ since we (Posit) have not fully worked out all of the details (as of today: 2023-09-26). Also, initial testing will allow developers to make APIs to make things more easy to use. 
 
 The example use case that I'll use to test is to show how [natural splines](https://towardsdatascience.com/numerical-interpolation-natural-cubic-spline-52c1157b98ac) can affect the classification boundaries produced via logistic regression. Using a simulated data set, we want to show the resulting class boundary curve for a given number of degrees of freedom for the splines. The user should be able to modify these and see the results. 
 
