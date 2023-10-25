@@ -75,9 +75,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <meta name="shinylive:serviceworker_dir" content=".">
-<script src="site_libs/quarto-contrib/shinylive-0.2.0/shinylive/load-shinylive-sw.js" type="module"></script>
-<script src="site_libs/quarto-contrib/shinylive-0.2.0/shinylive/run-python-blocks.js" type="module"></script>
-<link href="site_libs/quarto-contrib/shinylive-0.2.0/shinylive/shinylive.css" rel="stylesheet">
+<script src="site_libs/quarto-contrib/shinylive-0.2.1/shinylive/load-shinylive-sw.js" type="module"></script>
+<script src="site_libs/quarto-contrib/shinylive-0.2.1/shinylive/run-python-blocks.js" type="module"></script>
+<link href="site_libs/quarto-contrib/shinylive-0.2.1/shinylive/shinylive.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/shinylive-quarto-css/shinylive-quarto.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -219,10 +219,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="package-declarations" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="package-declarations"><span class="header-section-number">2.2</span> Package declarations</h2>
-<p>In our chunk that contains the <code>shiny</code> app (i.e., <code>fig-shiny-spline</code> in this example), let’s make sure to install packages that we need (besides <code>shiny</code>):</p>
+<p>In our chunk that contains the <code>shiny</code> app (i.e., <code>fig-shiny-spline</code> in this example), there are two ways that we can declare which packages should be downloaded into the webR framework:</p>
+<ul>
+<li>Use explicit <code>library()</code> commands. This will load the package in the app and declare that it should be installed.</li>
+<li>Write a <code>DESCRIPTION</code> file.</li>
+</ul>
+<p>shinylive uses the <code>renv</code> package to manage packages, so refer to that documentation.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>webr<span class="sc">::</span><span class="fu">install</span>(<span class="st">"ggplot2"</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>webr<span class="sc">::</span><span class="fu">install</span>(<span class="st">"htmltools"</span>)   <span class="co">#&lt;- only needed to use SVG images </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"ggplot2"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"htmltools"</span>)   <span class="co">#&lt;- only needed to use SVG images </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The base installation of webR includes its own <code>webr</code> utility package, so don’t worry about installing that.</p>
 </section>
@@ -351,8 +356,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="shinylive-r" data-engine="r"><code>#| label: fig-shiny-spline
 #| viewerHeight: 505
 #| standalone: true
-webr::install("ggplot2")
-webr::install("htmltools")
+library("ggplot2")
+library("htmltools")
 
 library(ggplot2)
 library(htmltools)

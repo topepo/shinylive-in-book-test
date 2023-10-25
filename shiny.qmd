@@ -30,14 +30,19 @@ There is a bit more to say about formatting the chunk for Quarto but we'll show 
 
 ## Package declarations
 
-In our chunk that contains the `shiny` app (i.e., `fig-shiny-spline` in this example), let's make sure to install packages that we need (besides `shiny`): 
+In our chunk that contains the `shiny` app (i.e., `fig-shiny-spline` in this example), there are two ways that we can declare which packages should be downloaded into the webR framework: 
+
+ - Use explicit `library()` commands. This will load the package in the app and declare that it should be installed.
+ - Write a `DESCRIPTION` file. 
+ 
+shinylive uses the `renv` package to manage packages, so refer to that documentation. 
 
 ```{r}
 #| label: pkg-installs
 #| eval: false
 
-webr::install("ggplot2")
-webr::install("htmltools")   #<- only needed to use SVG images 
+library("ggplot2")
+library("htmltools")   #<- only needed to use SVG images 
 ```
 
 The base installation of webR includes its own `webr` utility package, so don't worry about installing that. 
@@ -161,8 +166,8 @@ Our beautiful `shiny` app!
 #| label: fig-shiny-spline
 #| viewerHeight: 505
 #| standalone: true
-webr::install("ggplot2")
-webr::install("htmltools")
+library("ggplot2")
+library("htmltools")
 
 library(ggplot2)
 library(htmltools)
